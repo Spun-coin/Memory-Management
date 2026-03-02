@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CollegeVault — Memory Management</title>
+    <meta name="description"
+        content="Organize and manage your college documents semester-wise with CollegeVault, the smart memory management system for students." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- Background orbs -->
+    <div class="bg-orb orb1"></div>
+    <div class="bg-orb orb2"></div>
+    <div class="bg-orb orb3"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">CollegeVault</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"
+                title="Toggle sidebar">&#9776;</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Navigation</div>
+            <a href="#" class="nav-item active" id="nav-home" onclick="showHome()">
+                <span class="nav-icon">🏠</span><span class="nav-text">Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-search" onclick="showSearch()">
+                <span class="nav-icon">🔍</span><span class="nav-text">Search Files</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-recent" onclick="showRecent()">
+                <span class="nav-icon">🕐</span><span class="nav-text">Recent Files</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top:1.5rem;">Semesters</div>
+            <div id="semester-nav"></div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="storage-bar-wrap">
+                <div class="storage-label">
+                    <span>Storage Used</span>
+                    <span id="storage-used-text">0 KB</span>
+                </div>
+                <div class="storage-bar">
+                    <div class="storage-bar-fill" id="storage-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main" id="main">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="topbar-menu-btn always-visible" id="topbarMenuBtn"
+                    onclick="toggleSidebar()">&#9776;</button>
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="breadcrumb-item active">Dashboard</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="search-bar-mini">
+                    <span>🔍</span>
+                    <input type="text" id="quickSearch" placeholder="Quick search…"
+                        oninput="quickSearchFiles(this.value)" />
+                </div>
+                <button class="btn-primary" id="uploadBtn" onclick="triggerUpload()">
+                    <span>+</span> Upload File
+                </button>
+                <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileUpload(event)" />
+            </div>
+        </header>
+
+        <!-- Page: Dashboard (Home) -->
+        <div class="page" id="page-home">
+            <div class="page-hero">
+                <h1 class="hero-title">Welcome to <span class="gradient-text">CollegeVault</span></h1>
+                <p class="hero-subtitle">Your smart document memory management system — organized by semester,
+                    accessible anywhere.</p>
+            </div>
+
+            <div class="stats-row" id="stats-row"></div>
+
+            <div class="section-header">
+                <h2 class="section-title">📁 All Semesters</h2>
+                <div class="view-toggle">
+                    <button class="view-btn active" id="gridViewBtn" onclick="setView('grid')"
+                        title="Grid View">⊞</button>
+                    <button class="view-btn" id="listViewBtn" onclick="setView('list')" title="List View">≡</button>
+                </div>
+            </div>
+
+            <div class="semester-grid" id="semester-grid"></div>
+        </div>
+
+        <!-- Page: Semester View -->
+        <div class="page hidden" id="page-semester">
+            <div class="folder-header">
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <div class="folder-info">
+                    <span class="folder-badge" id="sem-badge"></span>
+                    <h2 id="sem-title"></h2>
+                </div>
+            </div>
+            <div class="section-header">
+                <h3 class="section-title" id="sem-subtitle"></h3>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn-outline" id="add-subject-btn" onclick="openAddSubjectModal()">+ Add
+                        Subject</button>
+                    <button class="btn-secondary" onclick="triggerUpload()">+ Upload Here</button>
+                </div>
+            </div>
+            <div id="semester-content"></div>
+        </div>
+
+        <!-- Page: Subject View -->
+        <div class="page hidden" id="page-subject">
+            <div class="folder-header">
+                <button class="back-btn" id="subject-back-btn" onclick="goBackToSemester()">← Back to Semester</button>
+                <div class="folder-info">
+                    <span class="folder-badge subject-badge" id="subject-badge"></span>
+                    <h2 id="subject-title"></h2>
+                </div>
+            </div>
+            <div class="section-header">
+                <h3 class="section-title" id="subject-subtitle"></h3>
+                <button class="btn-secondary" onclick="triggerUpload()">+ Upload File</button>
+            </div>
+            <div id="subject-content"></div>
+        </div>
+
+        <!-- Page: Search -->
+        <div class="page hidden" id="page-search">
+            <div class="page-hero" style="text-align:left; padding-bottom:1rem;">
+                <h2 class="section-title">🔍 Search Files</h2>
+            </div>
+            <div class="search-full-bar">
+                <span class="search-icon-lg">🔍</span>
+                <input type="text" id="fullSearch" placeholder="Search by file name, semester, subject…"
+                    oninput="fullSearchFiles(this.value)" />
+            </div>
+            <div id="search-results" class="file-list"></div>
+        </div>
+
+        <!-- Page: Recent -->
+        <div class="page hidden" id="page-recent">
+            <div class="page-hero" style="text-align:left; padding-bottom:1rem;">
+                <h2 class="section-title">🕐 Recent Files</h2>
+            </div>
+            <div id="recent-files" class="file-list"></div>
+        </div>
+
+    </main>
+
+    <!-- File Preview Modal -->
+    <div class="modal-overlay hidden" id="previewModal" onclick="closePreviewModal(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modal-title"></div>
+                    <div class="modal-meta" id="modal-meta"></div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="downloadFile()">⬇ Download</button>
+                <button class="btn-danger" onclick="deleteCurrentFile()">🗑 Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal-overlay hidden" id="addSubjectModal" onclick="closeAddSubjectModal(event)">
+        <div class="modal-box" style="max-width:480px;">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">➕ Add New Subject</div>
+                    <div class="modal-meta" id="add-subject-semester-label"></div>
+                </div>
+                <button class="modal-close" onclick="closeAddSubjectModal()">✕</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Subject Name</label>
+                    <input type="text" id="new-subject-name" class="form-input"
+                        placeholder="e.g. Data Structures, Physics…" maxlength="50" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pick an Icon</label>
+                    <div class="emoji-grid" id="emoji-grid"></div>
+                    <div class="selected-emoji-preview">
+                        Selected: <span id="selected-emoji-display">📚</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAddSubjectModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveNewSubject()">✓ Add Subject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
