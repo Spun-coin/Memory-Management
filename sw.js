@@ -1,64 +1,55 @@
-// ============================================================
-//  CollegeVault — Service Worker
-//  Enables offline use and PWA installability
-// ============================================================
+// CollegeVault Service Worker v2
+const CACHE = 'cv-v2';
+const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
-const CACHE_NAME = 'collegevault-v1';
-const ASSETS = [
-    './',
-    './index.html',
-    './style.css',
-    './app.js',
-    './manifest.json',
-    './icons/icon-192.png',
-    './icons/icon-512.png',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap'
-];
-
-// ── Install: cache all assets ──
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(ASSETS).catch(err => {
-                console.warn('Some assets could not be cached:', err);
-            });
-        })
-    );
+self.addEventListener('install', e => {
+    e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => { })));
     self.skipWaiting();
 });
 
-// ── Activate: clean old caches ──
-self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(
-                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-            )
-        )
-    );
+self.addEventListener('activate', e => {
+    e.waitUntil(caches.keys().then(keys =>
+        Promise.all(keys.filter(k => k !== CACHE && k !== 'cv-share-queue').map(k => caches.delete(k)))
+    ));
     self.clients.claim();
 });
 
-// ── Fetch: serve from cache, fallback to network ──
-self.addEventListener('fetch', event => {
-    // Skip non-GET and cross-origin (like font loading)
-    if (event.request.method !== 'GET') return;
+self.addEventListener('fetch', e => {
+    // ── Handle Web Share Target POST (from Viber / any app) ──
+    if (e.request.method === 'POST') {
+        e.respondWith((async () => {
+            try {
+                const fd = await e.request.formData();
+                const file = fd.get('file');
+                if (file) {
+                    const cache = await caches.open('cv-share-queue');
+                    await cache.put('incoming-file', new Response(file, {
+                        headers: {
+                            'content-type': file.type || 'application/octet-stream',
+                            'x-filename': file.name || 'shared-file',
+                        }
+                    }));
+                }
+            } catch (err) { console.warn('Share target error:', err); }
+            // Redirect to app with ?share=1
+            return Response.redirect('./index.html?share=1', 303);
+        })());
+        return;
+    }
 
-    event.respondWith(
-        caches.match(event.request).then(cached => {
+    // ── Cache-first for GET ──
+    if (e.request.method !== 'GET') return;
+    e.respondWith(
+        caches.match(e.request).then(cached => {
             if (cached) return cached;
-            return fetch(event.request).then(response => {
-                // Cache fresh responses
-                if (response && response.status === 200) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+            return fetch(e.request).then(res => {
+                if (res && res.status === 200 && res.type !== 'opaque') {
+                    const clone = res.clone();
+                    caches.open(CACHE).then(c => c.put(e.request, clone));
                 }
-                return response;
+                return res;
             }).catch(() => {
-                // If offline and no cache, return offline page
-                if (event.request.destination === 'document') {
-                    return caches.match('./index.html');
-                }
+                if (e.request.destination === 'document') return caches.match('./index.html');
             });
         })
     );

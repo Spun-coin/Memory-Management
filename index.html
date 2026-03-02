@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>CollegeVault — Memory Management</title>
-    <meta name="description"
-        content="Organize and manage your college documents semester-wise with CollegeVault, the smart memory management system for students." />
+    <title>CollegeVault</title>
+    <meta name="description" content="Smart memory management for your college documents" />
     <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#6c63ff" />
@@ -18,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
 </head>
@@ -28,214 +27,268 @@
     <!-- Background orbs -->
     <div class="bg-orb orb1"></div>
     <div class="bg-orb orb2"></div>
-    <div class="bg-orb orb3"></div>
 
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <span class="logo-icon">🎓</span>
-                <span class="logo-text">CollegeVault</span>
+    <!-- ═══ TOP HEADER ═══ -->
+    <header class="app-header" id="appHeader">
+        <button class="hdr-btn" id="backBtn" onclick="handleBack()" aria-label="Back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+        </button>
+        <div class="hdr-center" id="hdrCenter">
+            <span class="hdr-logo">🎓 CollegeVault</span>
+        </div>
+        <button class="hdr-btn hdr-upload" id="hdrUploadBtn" onclick="triggerUpload()" aria-label="Upload">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+            </svg>
+        </button>
+    </header>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="app-main" id="appMain">
+
+        <!-- SETUP (first run) -->
+        <div class="page" id="page-setup">
+            <div class="setup-hero">
+                <div class="setup-icon">🎓</div>
+                <h1 class="setup-title">Welcome to<br /><span class="gradient-text">CollegeVault</span></h1>
+                <p class="setup-desc">Your smart college document vault — organized by semester &amp; subject.</p>
             </div>
-            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"
-                title="Toggle sidebar">&#9776;</button>
+            <div class="setup-cards">
+                <div class="setup-card">
+                    <span class="setup-card-icon">�</span>
+                    <div class="setup-card-body">
+                        <div class="setup-card-title">Choose Storage Folder</div>
+                        <div class="setup-card-sub">Files will save to your phone's <strong>Downloads / Memory
+                                management app</strong> folder</div>
+                    </div>
+                    <button class="setup-card-btn" id="selectFolderBtn" onclick="selectStorageFolder()">Select</button>
+                </div>
+                <div class="setup-card">
+                    <span class="setup-card-icon">📲</span>
+                    <div class="setup-card-body">
+                        <div class="setup-card-title">Viber Integration</div>
+                        <div class="setup-card-sub">Long-press any Viber file → <strong>Share → CollegeVault</strong> to
+                            sort it automatically</div>
+                    </div>
+                    <span class="setup-badge">Auto ✓</span>
+                </div>
+            </div>
+            <button class="setup-skip" onclick="skipSetup()">Continue without selecting folder →</button>
         </div>
 
-        <nav class="sidebar-nav">
-            <div class="nav-section-label">Navigation</div>
-            <a href="#" class="nav-item active" id="nav-home" onclick="showHome()">
-                <span class="nav-icon">🏠</span><span class="nav-text">Dashboard</span>
-            </a>
-            <a href="#" class="nav-item" id="nav-search" onclick="showSearch()">
-                <span class="nav-icon">🔍</span><span class="nav-text">Search Files</span>
-            </a>
-            <a href="#" class="nav-item" id="nav-recent" onclick="showRecent()">
-                <span class="nav-icon">🕐</span><span class="nav-text">Recent Files</span>
-            </a>
-
-            <div class="nav-section-label" style="margin-top:1.5rem;">Semesters</div>
-            <div id="semester-nav"></div>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="storage-bar-wrap">
-                <div class="storage-label">
-                    <span>Storage Used</span>
-                    <span id="storage-used-text">0 KB</span>
-                </div>
-                <div class="storage-bar">
-                    <div class="storage-bar-fill" id="storage-bar-fill"></div>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main" id="main">
-
-        <!-- Top Bar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="topbar-menu-btn always-visible" id="topbarMenuBtn"
-                    onclick="toggleSidebar()">&#9776;</button>
-                <div class="breadcrumb" id="breadcrumb">
-                    <span class="breadcrumb-item active">Dashboard</span>
-                </div>
-            </div>
-            <div class="topbar-right">
-                <div class="search-bar-mini">
-                    <span>🔍</span>
-                    <input type="text" id="quickSearch" placeholder="Quick search…"
-                        oninput="quickSearchFiles(this.value)" />
-                </div>
-                <button class="btn-primary" id="uploadBtn" onclick="triggerUpload()">
-                    <span>+</span> Upload File
-                </button>
-                <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileUpload(event)" />
-            </div>
-        </header>
-
-        <!-- Page: Dashboard (Home) -->
-        <div class="page" id="page-home">
-            <div class="page-hero">
-                <h1 class="hero-title">Welcome to <span class="gradient-text">CollegeVault</span></h1>
-                <p class="hero-subtitle">Your smart document memory management system — organized by semester,
-                    accessible anywhere.</p>
-            </div>
-
-            <div class="stats-row" id="stats-row"></div>
-
-            <div class="section-header">
-                <h2 class="section-title">📁 All Semesters</h2>
+        <!-- HOME -->
+        <div class="page hidden" id="page-home">
+            <div class="stats-strip" id="statsStrip"></div>
+            <div class="section-row">
+                <div class="section-title">📁 Semesters</div>
                 <div class="view-toggle">
-                    <button class="view-btn active" id="gridViewBtn" onclick="setView('grid')"
-                        title="Grid View">⊞</button>
-                    <button class="view-btn" id="listViewBtn" onclick="setView('list')" title="List View">≡</button>
+                    <button class="view-btn active" id="gridBtn" onclick="setView('grid')" title="Grid">⊞</button>
+                    <button class="view-btn" id="listBtn" onclick="setView('list')" title="List">≡</button>
                 </div>
             </div>
-
-            <div class="semester-grid" id="semester-grid"></div>
+            <div class="sem-grid" id="semGrid"></div>
         </div>
 
-        <!-- Page: Semester View -->
+        <!-- SEMESTER VIEW -->
         <div class="page hidden" id="page-semester">
-            <div class="folder-header">
-                <button class="back-btn" onclick="goBack()">← Back</button>
-                <div class="folder-info">
-                    <span class="folder-badge" id="sem-badge"></span>
-                    <h2 id="sem-title"></h2>
-                </div>
-            </div>
-            <div class="section-header">
-                <h3 class="section-title" id="sem-subtitle"></h3>
-                <div style="display:flex; gap:0.5rem;">
-                    <button class="btn-outline" id="add-subject-btn" onclick="openAddSubjectModal()">+ Add
-                        Subject</button>
-                    <button class="btn-secondary" onclick="triggerUpload()">+ Upload Here</button>
-                </div>
-            </div>
-            <div id="semester-content"></div>
+            <div id="semBody"></div>
         </div>
 
-        <!-- Page: Subject View -->
+        <!-- SUBJECT VIEW -->
         <div class="page hidden" id="page-subject">
-            <div class="folder-header">
-                <button class="back-btn" id="subject-back-btn" onclick="goBackToSemester()">← Back to Semester</button>
-                <div class="folder-info">
-                    <span class="folder-badge subject-badge" id="subject-badge"></span>
-                    <h2 id="subject-title"></h2>
+            <div id="subBody"></div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="page hidden" id="page-search">
+            <div class="search-wrap">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search files, semesters…"
+                        oninput="doSearch(this.value)" />
                 </div>
             </div>
-            <div class="section-header">
-                <h3 class="section-title" id="subject-subtitle"></h3>
-                <button class="btn-secondary" onclick="triggerUpload()">+ Upload File</button>
-            </div>
-            <div id="subject-content"></div>
+            <div id="searchResults"></div>
         </div>
 
-        <!-- Page: Search -->
-        <div class="page hidden" id="page-search">
-            <div class="page-hero" style="text-align:left; padding-bottom:1rem;">
-                <h2 class="section-title">🔍 Search Files</h2>
-            </div>
-            <div class="search-full-bar">
-                <span class="search-icon-lg">🔍</span>
-                <input type="text" id="fullSearch" placeholder="Search by file name, semester, subject…"
-                    oninput="fullSearchFiles(this.value)" />
-            </div>
-            <div id="search-results" class="file-list"></div>
-        </div>
-
-        <!-- Page: Recent -->
+        <!-- RECENT -->
         <div class="page hidden" id="page-recent">
-            <div class="page-hero" style="text-align:left; padding-bottom:1rem;">
-                <h2 class="section-title">🕐 Recent Files</h2>
+            <div class="section-title" style="padding:1rem 1rem 0.5rem">🕐 Recent Files</div>
+            <div id="recentFiles"></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="page hidden" id="page-settings">
+            <div class="settings-wrap">
+                <h2 class="section-title" style="margin-bottom:1.25rem">⚙️ Settings</h2>
+
+                <div class="settings-group">
+                    <div class="settings-label">Storage</div>
+                    <div class="settings-item" onclick="selectStorageFolder()">
+                        <span class="si-icon">📁</span>
+                        <div class="si-info">
+                            <div class="si-title">Storage Folder</div>
+                            <div class="si-sub" id="storageFolderPath">Not selected</div>
+                        </div>
+                        <span class="si-arrow">›</span>
+                    </div>
+                    <div class="settings-item" onclick="clearAllData()">
+                        <span class="si-icon">🗑️</span>
+                        <div class="si-info">
+                            <div class="si-title">Clear All Data</div>
+                            <div class="si-sub">Delete all files and metadata</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-label">Viber Integration</div>
+                    <div class="settings-item">
+                        <span class="si-icon">📲</span>
+                        <div class="si-info">
+                            <div class="si-title">Share from Viber</div>
+                            <div class="si-sub">Long-press file in Viber → Share → CollegeVault → choose folder</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-label">About</div>
+                    <div class="settings-item"
+                        onclick="window.open('https://github.com/Spun-coin/Memory-Management','_blank')">
+                        <span class="si-icon">🐙</span>
+                        <div class="si-info">
+                            <div class="si-title">GitHub</div>
+                            <div class="si-sub">Spun-coin/Memory-Management</div>
+                        </div>
+                        <span class="si-arrow">›</span>
+                    </div>
+                    <div class="settings-item">
+                        <span class="si-icon">ℹ️</span>
+                        <div class="si-info">
+                            <div class="si-title">CollegeVault v2.0</div>
+                            <div class="si-sub">PWA · Works Offline</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="recent-files" class="file-list"></div>
         </div>
 
     </main>
 
-    <!-- File Preview Modal -->
+    <!-- ═══ BOTTOM NAV ═══ -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-tab active" id="nav-home" onclick="showHome()">
+            <span class="nav-tab-icon">🏠</span>
+            <span class="nav-tab-label">Home</span>
+        </button>
+        <button class="nav-tab" id="nav-search" onclick="showSearch()">
+            <span class="nav-tab-icon">🔍</span>
+            <span class="nav-tab-label">Search</span>
+        </button>
+        <div class="nav-fab-wrap">
+            <button class="nav-fab" onclick="triggerUpload()" aria-label="Upload file">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12l7-7 7 7" />
+                </svg>
+            </button>
+        </div>
+        <button class="nav-tab" id="nav-recent" onclick="showRecent()">
+            <span class="nav-tab-icon">🕐</span>
+            <span class="nav-tab-label">Recent</span>
+        </button>
+        <button class="nav-tab" id="nav-settings" onclick="showSettings()">
+            <span class="nav-tab-icon">⚙️</span>
+            <span class="nav-tab-label">Settings</span>
+        </button>
+    </nav>
+
+    <!-- ═══ SORT BOTTOM SHEET ═══ -->
+    <div class="sheet-backdrop hidden" id="sheetBackdrop" onclick="closeSortSheet()"></div>
+    <div class="sort-sheet hidden" id="sortSheet">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-hdr">
+            <div class="sheet-title">� Where should this go?</div>
+            <div class="sheet-filename" id="sheetFilename"></div>
+        </div>
+        <div class="sheet-body">
+            <div class="sheet-sec-label">Select Semester</div>
+            <div class="chip-row" id="semChips"></div>
+            <div class="sheet-sec-label" id="subLabel" style="display:none">Select Subject</div>
+            <div class="chip-row" id="subChips"></div>
+            <div class="sheet-dest" id="sheetDest"></div>
+        </div>
+        <div class="sheet-footer">
+            <button class="sheet-cancel" onclick="closeSortSheet()">Cancel</button>
+            <button class="sheet-save" id="sheetSaveBtn" onclick="confirmSort()">✓ Save Here</button>
+        </div>
+    </div>
+
+    <!-- ═══ FILE PREVIEW MODAL ═══ -->
     <div class="modal-overlay hidden" id="previewModal" onclick="closePreviewModal(event)">
         <div class="modal-box">
-            <div class="modal-header">
+            <div class="modal-hdr">
                 <div>
-                    <div class="modal-title" id="modal-title"></div>
-                    <div class="modal-meta" id="modal-meta"></div>
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-meta" id="modalMeta"></div>
                 </div>
                 <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
-            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="downloadFile()">⬇ Download</button>
+                <button class="btn-secondary" onclick="downloadCurrentFile()">⬇ Download</button>
                 <button class="btn-danger" onclick="deleteCurrentFile()">🗑 Delete</button>
             </div>
         </div>
     </div>
 
-    <!-- Add Subject Modal -->
+    <!-- ═══ ADD SUBJECT MODAL ═══ -->
     <div class="modal-overlay hidden" id="addSubjectModal" onclick="closeAddSubjectModal(event)">
-        <div class="modal-box" style="max-width:480px;">
-            <div class="modal-header">
+        <div class="modal-box" style="max-width:360px">
+            <div class="modal-hdr">
                 <div>
-                    <div class="modal-title">➕ Add New Subject</div>
-                    <div class="modal-meta" id="add-subject-semester-label"></div>
+                    <div class="modal-title">➕ New Subject</div>
+                    <div class="modal-meta" id="addSubSemLabel"></div>
                 </div>
                 <button class="modal-close" onclick="closeAddSubjectModal()">✕</button>
             </div>
-            <div class="modal-body" style="padding:1.5rem;">
+            <div class="modal-body" style="padding:1.25rem">
                 <div class="form-group">
                     <label class="form-label">Subject Name</label>
-                    <input type="text" id="new-subject-name" class="form-input"
-                        placeholder="e.g. Data Structures, Physics…" maxlength="50" />
+                    <input type="text" id="newSubjectName" class="form-input" placeholder="e.g. Data Structures…"
+                        maxlength="50" />
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Pick an Icon</label>
-                    <div class="emoji-grid" id="emoji-grid"></div>
-                    <div class="selected-emoji-preview">
-                        Selected: <span id="selected-emoji-display">📚</span>
-                    </div>
+                    <label class="form-label">Icon</label>
+                    <div class="emoji-grid" id="emojiGrid"></div>
+                    <div class="selected-emoji-preview">Selected: <span id="selectedEmojiDisplay">📚</span></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeAddSubjectModal()">Cancel</button>
-                <button class="btn-primary" onclick="saveNewSubject()">✓ Add Subject</button>
+                <button class="btn-primary" onclick="saveNewSubject()">Add Subject</button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileUpload(event)" />
 
     <script src="app.js"></script>
     <script>
-        // Register Service Worker for PWA / offline support
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('✅ SW registered:', reg.scope))
-                    .catch(err => console.warn('SW registration failed:', err));
+                    .then(r => console.log('✅ SW:', r.scope))
+                    .catch(e => console.warn('SW failed:', e));
             });
         }
     </script>
